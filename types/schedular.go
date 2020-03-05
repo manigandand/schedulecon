@@ -91,6 +91,7 @@ func (s *SlotDetails) IsFree(duration int) bool {
 // AssignTalk ...
 // TODO: set start time end time
 func (s *SlotDetails) AssignTalk(talk *Talk) {
+	talk.ID = uint(len(s.Slots) + 1)
 	s.Slots = append(s.Slots, talk)
 	s.updateAvailableTime(talk.Duration)
 }
