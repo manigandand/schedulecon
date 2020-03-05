@@ -1,14 +1,32 @@
 package types
 
 import (
-	"errors"
+	"strings"
+
+	"hotstar/pkg/errors"
 )
 
-// SchedularReq ... in mintes
-type SchedularReq struct {
+// TalkReq ... in mintes
+type TalkReq struct {
 	Title    string `json:"title"`
 	Author   string `json:"author"`
 	Duration int    `json:"duration"`
+}
+
+// Ok implements the Ok interface, it validates city input
+func (t *TalkReq) Ok() error {
+	switch {
+	case strings.TrimSpace(t.Title) == "":
+		return errors.IsRequiredErr("title")
+	case strings.TrimSpace(t.Author) == "":
+		return errors.IsRequiredErr("author")
+	case t.Duration < 10:
+		return errors.New("talk duration should not less than 10 mins")
+	case t.Duration > 180:
+		return errors.New("talk duration should not more than 180 mins")
+	}
+
+	return nil
 }
 
 // Talk ... talks
@@ -62,19 +80,6 @@ func (s *Slots) AssignTalk(talk *Talk) error {
 		s.Evening.AssignTalk(talk)
 		return nil
 	}
-
-	// if s.Morning.IsFree(talk.Duration) {
-	// 	s.Morning.AssignTalk(talk)
-	// 	return nil
-	// }
-	// if s.Afternoon.IsFree(talk.Duration) {
-	// 	s.Afternoon.AssignTalk(talk)
-	// 	return nil
-	// }
-	// if s.Evening.IsFree(talk.Duration) {
-	// 	s.Evening.AssignTalk(talk)
-	// 	return nil
-	// }
 
 	return errors.New("no slots available")
 }

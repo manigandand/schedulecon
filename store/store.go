@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"hotstar/pkg/errors"
 	"hotstar/types"
 	"time"
 )
@@ -14,46 +15,33 @@ var Slots = make(map[time.Time]*types.Slots, 0)
 
 // Init ...
 func Init() {
-	time := time.Now().Local()
-	// config
+	populateDefaultSlots()
 
-	Slots[time] = &types.Slots{
-		Morning: &types.SlotDetails{
-			Slots:         make([]*types.Talk, 0),
-			TotalMins:     4 * 60,
-			AvailableMins: 4 * 60,
-			StartTime:     9,
-			EndTime:       13,
-		},
-		LunchBreak: &types.SlotBreak{
-			StartTime: 13,
-			EndTime:   14,
-			Duration:  60,
-		},
-		Afternoon: &types.SlotDetails{
-			Slots:         make([]*types.Talk, 0),
-			TotalMins:     2 * 60,
-			AvailableMins: 2 * 60,
-			StartTime:     14,
-			EndTime:       16,
-		},
-		TeaBreak: &types.SlotBreak{
-			StartTime: 16,
-			EndTime:   16.30,
-			Duration:  30,
-		},
-		Evening: &types.SlotDetails{
-			Slots:         make([]*types.Talk, 0),
-			TotalMins:     90,
-			AvailableMins: 90,
-			StartTime:     16.30,
-			EndTime:       18,
-		},
-	}
-
+	// Process default inputs
 	process(input)
 }
 
+// ScheduleSlot assigns the slots for the talk
+func ScheduleSlot(talk *types.Talk) (map[time.Time]*types.Slots, *errors.AppError) {
+	isSlotAlloted := false
+	for _, slot := range Slots {
+		err := slot.AssignTalk(talk)
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
+		isSlotAlloted = true
+		break
+	}
+	if !isSlotAlloted {
+		return nil, errors.BadRequest("Can't allocate slots for this talk, try agian")
+	}
+
+	return Slots, nil
+}
+
+// -----------------------------------------------------------------------------
+// Defaults
 func process(input []*types.Talk) {
 	for _, talk := range input {
 		for _, slot := range Slots {

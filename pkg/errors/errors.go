@@ -19,6 +19,11 @@ func IsRequiredErr(key string) error {
 	return ner(key + " is required")
 }
 
+// New error
+func New(msg string) error {
+	return ner(msg)
+}
+
 func (err *AppError) Error() string {
 	return err.Message
 }

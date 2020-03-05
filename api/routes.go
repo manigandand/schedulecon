@@ -28,7 +28,8 @@ func (f Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func Routes(router chi.Router) {
 	router.Get("/", IndexHandeler)
 
-	router.Method(http.MethodGet, "/talks", Handler(schedularHandler))
+	router.Method(http.MethodGet, "/talks", Handler(getAllScheduledTalksHandler))
+	router.Method(http.MethodPost, "/talks", Handler(scheduleTalkHandler))
 }
 
 // Basic Handler func ---------------------------------------------------------------
