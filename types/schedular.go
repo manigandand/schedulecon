@@ -11,8 +11,9 @@ type SchedularReq struct {
 	Duration int    `json:"duration"`
 }
 
-// Schedular ... talks
-type Schedular struct {
+// Talk ... talks
+type Talk struct {
+	ID        uint   `json:"id"`
 	Title     string `json:"title,omitempty"`
 	Author    string `json:"author,omitempty"`
 	Duration  int    `json:"duration,omitempty"`
@@ -22,18 +23,18 @@ type Schedular struct {
 
 // SlotDetails ...
 type SlotDetails struct {
-	Slots            []*Schedular `json:"slots"`
-	TotalMins        int          `json:"total_mins"`
-	AvailableMins    int          `json:"available_mins"`
-	StartTime        int          `json:"start_time,omitempty"`
-	EndTime          int          `json:"end_time,omitempty"`
-	IsSlotsAvailable bool         `json:"is_slots_available,omitempty"`
+	Slots         []*Talk `json:"slots"`
+	TotalMins     int     `json:"total_mins"`
+	AvailableMins int     `json:"available_mins"`
+	StartTime     float32 `json:"start_time,omitempty"`
+	EndTime       float32 `json:"end_time,omitempty"`
 }
 
 // SlotBreak ...
 type SlotBreak struct {
 	StartTime float32 `json:"start_time,omitempty"`
 	EndTime   float32 `json:"end_time,omitempty"`
+	Duration  int     `json:"duration"`
 }
 
 // Slots ...
@@ -46,21 +47,55 @@ type Slots struct {
 }
 
 // AssignTalk ...
-func (s *Slots) AssignTalk(talk *Schedular) error {
-	// check morning first
-	// check afternoon first
-	// check evening first
-	// check morning first
+// check morning first
+// then afternoon first
+// and then evening first
+func (s *Slots) AssignTalk(talk *Talk) error {
+	switch {
+	case s.Morning.IsFree(talk.Duration):
+		s.Morning.AssignTalk(talk)
+		return nil
+	case s.Afternoon.IsFree(talk.Duration):
+		s.Afternoon.AssignTalk(talk)
+		return nil
+	case s.Evening.IsFree(talk.Duration):
+		s.Evening.AssignTalk(talk)
+		return nil
+	}
+
+	// if s.Morning.IsFree(talk.Duration) {
+	// 	s.Morning.AssignTalk(talk)
+	// 	return nil
+	// }
+	// if s.Afternoon.IsFree(talk.Duration) {
+	// 	s.Afternoon.AssignTalk(talk)
+	// 	return nil
+	// }
+	// if s.Evening.IsFree(talk.Duration) {
+	// 	s.Evening.AssignTalk(talk)
+	// 	return nil
+	// }
 
 	return errors.New("no slots available")
 }
 
 // IsFree ...
-func (s *SlotDetails) IsFree(duration int) error {
-	if !s.IsSlotsAvailable {
-		return errors.New("no slots available")
+func (s *SlotDetails) IsFree(duration int) bool {
+	if s.AvailableMins < duration {
+		return false
 	}
-	// check the map
 
-	return errors.New("no slots available")
+	return true
+}
+
+// AssignTalk ...
+// TODO: set start time end time
+func (s *SlotDetails) AssignTalk(talk *Talk) {
+	s.Slots = append(s.Slots, talk)
+	s.updateAvailableTime(talk.Duration)
+}
+
+// UpdateAvailableTime ...
+func (s *SlotDetails) updateAvailableTime(duration int) {
+	s.AvailableMins = s.AvailableMins - duration
 }
