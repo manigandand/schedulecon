@@ -1,3 +1,3 @@
 # simple talk schedular
 
-go build . && ./hotstar
+go build . && ./schedulecon
